@@ -4,14 +4,16 @@
     <title>Checkers Project</title>
 </head>
 <body>
+
     <canvas id="myCanvas"></canvas>
 
     <script type="module">
 import * as THREE from 'three';
 
 var scene = new THREE.Scene();
+
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 10, 50);
+camera.position.set(0, 30, 30);
 camera.lookAt(new THREE.Vector3(0.0,0.0,0.0));
 scene.add(camera);
 
@@ -23,9 +25,16 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Temporary Ambient Light
 scene.add(ambientLight);
 
+// Table Code
+const textureLoader = new THREE.TextureLoader();
+const floorTexture = textureLoader.load('Floor_Tile.jpg');
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(20, 20);
+
 // Floor Code
 const floorGeometry = new THREE.PlaneGeometry(200, 200);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotation.x = -Math.PI / 2;
 floor.position.y = 0;
