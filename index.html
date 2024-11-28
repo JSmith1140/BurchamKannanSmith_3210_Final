@@ -83,16 +83,16 @@
         //board code
         const boardTexture = textureLoader.load('Floor_Tile.jpg'); // board texture
 
-        const boardHeight = 7;
+        const boardHeight = tableHeight/2;
         const boardThickness = 2; // Thickness of the board
-        const boardLength = 30;
-        const boardWidth = 25;
+        const boardLength = tabletopLength/2;
+        const boardWidth = tabletopWidth/2;
 
         //create board
         const boardGeometry = new THREE.PlaneGeometry(boardLength, boardWidth);
         const boardMaterial = new THREE.MeshStandardMaterial({map: boardTexture});
         const board = new THREE.Mesh(boardGeometry, boardMaterial);
-        board.position.set(0, tableHeight + boardThickness / 2, 0); 
+        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2, 0); 
         scene.add(board);
 
         // Animate loop
