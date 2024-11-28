@@ -8,85 +8,100 @@
     <canvas id="myCanvas"></canvas>
 
     <script type="module">
-import * as THREE from 'three';
+        import * as THREE from 'three';
 
-var scene = new THREE.Scene();
+        var scene = new THREE.Scene();
 
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 35, 35);
-camera.lookAt(new THREE.Vector3(0.0,0.0,0.0));
-scene.add(camera);
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        camera.position.set(0, 35, 35);
+        camera.lookAt(new THREE.Vector3(0.0,0.0,0.0));
+        scene.add(camera);
 
-var renderer = new THREE.WebGLRenderer({canvas: myCanvas, antialias: true});
-renderer.setClearColor(0x000000);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
+        var renderer = new THREE.WebGLRenderer({canvas: myCanvas, antialias: true});
+        renderer.setClearColor(0x000000);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Temporary Ambient Light
-scene.add(ambientLight);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Temporary Ambient Light
+        scene.add(ambientLight);
 
-// Table Code
-const textureLoader = new THREE.TextureLoader();
-const tabletopTexture = textureLoader.load('Table_Wood.jpg'); // tabletop texture
-const legTexture = textureLoader.load('Table_Wood.jpg'); // table leg texture
-const floorTexture = textureLoader.load('Floor_Tile.jpg'); // floor texture
-floorTexture.wrapS = THREE.RepeatWrapping;
-floorTexture.wrapT = THREE.RepeatWrapping;
-floorTexture.repeat.set(5, 5);
+        // Table Code
+        const textureLoader = new THREE.TextureLoader();
+        const tabletopTexture = textureLoader.load('Table_Wood.jpg'); // tabletop texture
+        const legTexture = textureLoader.load('Table_Wood.jpg'); // table leg texture
+        const floorTexture = textureLoader.load('Floor_Tile.jpg'); // floor texture
+        floorTexture.wrapS = THREE.RepeatWrapping;
+        floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(5, 5);
 
-const tableHeight = 15; 
-const tabletopHeight = 2; // Thickness of the tabletop
-const legHeight = tableHeight - tabletopHeight;
-const tabletopLength = 60; 
-const tabletopWidth = 50; 
+        const tableHeight = 15; 
+        const tabletopHeight = 2; // Thickness of the tabletop
+        const legHeight = tableHeight - tabletopHeight;
+        const tabletopLength = 60; 
+        const tabletopWidth = 50; 
 
-// Create the tabletop
-const tabletopGeometry = new THREE.BoxGeometry(tabletopLength, tabletopHeight, tabletopWidth);
-const tabletopMaterial = new THREE.MeshStandardMaterial({map: tabletopTexture});
-const tabletop = new THREE.Mesh(tabletopGeometry, tabletopMaterial);
-tabletop.position.set(0, tableHeight - tabletopHeight / 2, 0); 
-scene.add(tabletop);
+        // Create the tabletop
+        const tabletopGeometry = new THREE.BoxGeometry(tabletopLength, tabletopHeight, tabletopWidth);
+        const tabletopMaterial = new THREE.MeshStandardMaterial({map: tabletopTexture});
+        const tabletop = new THREE.Mesh(tabletopGeometry, tabletopMaterial);
+        tabletop.position.set(0, tableHeight - tabletopHeight / 2, 0); 
+        scene.add(tabletop);
 
-// Create the table legs
-const legRadiusTop = 2;
-const legRadiusBottom = 2;
-const legSegments = 32;
+        // Create the table legs
+        const legRadiusTop = 2;
+        const legRadiusBottom = 2;
+        const legSegments = 32;
 
-const legGeometry = new THREE.CylinderGeometry(legRadiusTop, legRadiusBottom, legHeight, legSegments);
-const legMaterial = new THREE.MeshStandardMaterial({map: legTexture});
+        const legGeometry = new THREE.CylinderGeometry(legRadiusTop, legRadiusBottom, legHeight, legSegments);
+        const legMaterial = new THREE.MeshStandardMaterial({map: legTexture});
 
-// Position the legs on each corner of the tabletop
-const legOffsetX = tabletopLength / 2 - legRadiusTop;
-const legOffsetZ = tabletopWidth / 2 - legRadiusTop;
+        // Position the legs on each corner of the tabletop
+        const legOffsetX = tabletopLength / 2 - legRadiusTop;
+        const legOffsetZ = tabletopWidth / 2 - legRadiusTop;
 
-const legPositions = [
-  { x: -legOffsetX, y: legHeight / 2, z: -legOffsetZ }, // leg 1
-  { x: legOffsetX, y: legHeight / 2, z: -legOffsetZ },  // leg 2
-  { x: -legOffsetX, y: legHeight / 2, z: legOffsetZ },  // leg 3
-  { x: legOffsetX, y: legHeight / 2, z: legOffsetZ },   // leg 4
-];
+        const legPositions = [
+            { x: -legOffsetX, y: legHeight / 2, z: -legOffsetZ }, // leg 1
+            { x: legOffsetX, y: legHeight / 2, z: -legOffsetZ },  // leg 2
+            { x: -legOffsetX, y: legHeight / 2, z: legOffsetZ },  // leg 3
+            { x: legOffsetX, y: legHeight / 2, z: legOffsetZ },   // leg 4
+        ];
 
-legPositions.forEach(pos => {
-  const leg = new THREE.Mesh(legGeometry, legMaterial);
-  leg.position.set(pos.x, pos.y, pos.z);
-  scene.add(leg);
-});
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.set(pos.x, pos.y, pos.z);
+            scene.add(leg);
+        });
 
-// Floor Code
-const floorGeometry = new THREE.PlaneGeometry(200, 200);
-const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2;
-floor.position.y = 0;
-scene.add(floor);
+        // Floor Code
+        const floorGeometry = new THREE.PlaneGeometry(200, 200);
+        const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = 0;
+        scene.add(floor);
 
-// Animate loop
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
+        //board code
+        const boardTexture = textureLoader.load('Floor_Tile.jpg'); // board texture
 
-animate();
+        const boardHeight = 7;
+        const boardThickness = 2; // Thickness of the board
+        const boardLength = 30;
+        const boardWidth = 25;
+
+        //create board
+        const boardGeometry = new THREE.PlaneGeometry(boardLength, boardWidth);
+        const boardMaterial = new THREE.MeshStandardMaterial({map: boardTexture});
+        const board = new THREE.Mesh(boardGeometry, boardMaterial);
+        board.position.set(0, tableHeight + boardThickness / 2, 0); 
+        scene.add(board);
+
+        // Animate loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
     </script>
 </body>
 </html>
