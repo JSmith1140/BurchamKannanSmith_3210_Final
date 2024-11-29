@@ -80,19 +80,20 @@
         floor.position.y = 0;
         scene.add(floor);
 
-        //board code
-        const boardTexture = textureLoader.load('Checkers.jpg'); // board texture
+        // Board code
+        const boardTexture = textureLoader.load('Checkers_Board.jpg'); // Board texture
 
         const boardHeight = tableHeight/2;
         const boardThickness = 2; // Thickness of the board
-        const boardLength = tabletopLength/2;
-        const boardWidth = tabletopWidth/2;
+        const boardLength = tabletopLength * 0.75;
+        const boardWidth = tabletopWidth * 0.75;
 
-        //create board
+        // Create board
         const boardGeometry = new THREE.PlaneGeometry(boardLength, boardWidth);
         const boardMaterial = new THREE.MeshStandardMaterial({map: boardTexture});
         const board = new THREE.Mesh(boardGeometry, boardMaterial);
-        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2, 0); 
+        board.rotation.x = -Math.PI / 2;
+        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.05, 0); 
         scene.add(board);
 
         // Animate loop
