@@ -83,6 +83,9 @@
         // Board code
         const boardTexture = textureLoader.load('Checkers_Board.jpg'); // Board texture
 
+        boardTexture.center.set(0.5, 0.5); 
+        boardTexture.rotation = Math.PI / 2;
+
         const boardHeight = tableHeight/2;
         const boardThickness = 2; // Thickness of the board
         const boardLength = tabletopLength * 0.75;
