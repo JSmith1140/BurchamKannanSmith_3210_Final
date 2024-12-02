@@ -99,6 +99,61 @@
         board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.05, 0); 
         scene.add(board);
 
+        
+        // Add small dot markers in the middle of each square
+        const squareSizeX = boardLength / 8; // Assuming 8x8 grid
+        const squareSizeZ = boardWidth / 8;
+
+        const dotGeometry = new THREE.SphereGeometry(0.2, 16, 16); // Small sphere for dot
+        const dotMaterial = new THREE.MeshStandardMaterial({color: 0xff0000}); // Red color for the dot
+
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+
+                // Calculate position for each dot in the center of each square
+                dot.position.x = (i - 3.5) * squareSizeX;
+                dot.position.z = (j - 3.5) * squareSizeZ;
+                dot.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.1; // Slightly above the board surface
+
+                scene.add(dot);
+            }
+        }
+
+        // Checker piece creation
+        const checkerGeometry = new THREE.CylinderGeometry(1, 1, 0.3, 32); // Simple disk geometry for checkers
+        const whiteMaterial = new THREE.MeshStandardMaterial({color: 0xffffff});
+        const blackMaterial = new THREE.MeshStandardMaterial({color: 0x000000});
+
+        // Place black and white checkers on the board
+        const checkerRadius = squareSizeX / 2; // Checker radius is half the square size
+
+        // Place white checkers on the bottom half of the board (rows 5, 6, 7)
+        for (let row = 5; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                if ((row + col) % 2 === 1) { // Dark squares only
+                    const checker = new THREE.Mesh(checkerGeometry, whiteMaterial);
+                    checker.position.x = (col - 3.5) * squareSizeX;
+                    checker.position.z = (row - 3.5) * squareSizeZ;
+                    checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
+                    scene.add(checker);
+                }
+            }
+        }
+
+        // Place black checkers on the top half of the board (rows 0, 1, 2)
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 8; col++) {
+                if ((row + col) % 2 === 1) { // Dark squares only
+                    const checker = new THREE.Mesh(checkerGeometry, blackMaterial);
+                    checker.position.x = (col - 3.5) * squareSizeX;
+                    checker.position.z = (row - 3.5) * squareSizeZ;
+                    checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
+                    scene.add(checker);
+                }
+            }
+        }
+
         // Animate loop
         function animate() {
             requestAnimationFrame(animate);
