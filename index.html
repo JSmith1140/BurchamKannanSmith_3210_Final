@@ -109,19 +109,22 @@
 
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
-                const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+                if ((i + j) % 2 === 1) {
+                    const dot = new THREE.Mesh(dotGeometry, dotMaterial);
 
-                // Calculate position for each dot in the center of each square
-                dot.position.x = (i - 3.5) * squareSizeX;
-                dot.position.z = (j - 3.5) * squareSizeZ;
-                dot.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.1; // Slightly above the board surface
+                    // Calculate position for each dot in the center of each square
+                    dot.position.x = (i - 3.5) * squareSizeX;
+                    dot.position.z = (j - 3.5) * squareSizeZ;
+                    dot.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.1; // Slightly above the board surface
 
-                scene.add(dot);
+                    scene.add(dot);
+                    redDots.push(dot.position);
+                }
             }
         }
 
         // Checker piece creation
-        const checkerGeometry = new THREE.CylinderGeometry(1, 1, 0.3, 32); // Simple disk geometry for checkers
+        const checkerGeometry = new THREE.CylinderGeometry(2, 2, 0.6, 32); // Simple disk geometry for checkers
         const whiteMaterial = new THREE.MeshStandardMaterial({color: 0xffffff});
         const blackMaterial = new THREE.MeshStandardMaterial({color: 0x000000});
 
