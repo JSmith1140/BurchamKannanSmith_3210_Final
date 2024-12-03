@@ -107,6 +107,8 @@
         const dotGeometry = new THREE.SphereGeometry(0.2, 16, 16); // Small sphere for dot
         const dotMaterial = new THREE.MeshStandardMaterial({color: 0xff0000}); // Red color for the dot
 
+        const blackSquares = [];
+
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 if ((i + j) % 2 === 1) {
@@ -118,7 +120,7 @@
                     dot.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.1; // Slightly above the board surface
 
                     scene.add(dot);
-                    redDots.push(dot.position);
+                    blackSquares.push({ x: dot.position.x, z: dot.position.z });
                 }
             }
         }
@@ -127,6 +129,8 @@
         const checkerGeometry = new THREE.CylinderGeometry(2, 2, 0.6, 32); // Simple disk geometry for checkers
         const whiteMaterial = new THREE.MeshStandardMaterial({color: 0xffffff});
         const blackMaterial = new THREE.MeshStandardMaterial({color: 0x000000});
+
+        const checkers = [];
 
         // Place black and white checkers on the board
         const checkerRadius = squareSizeX / 2; // Checker radius is half the square size
@@ -140,6 +144,7 @@
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
                     scene.add(checker);
+                    checkers.push(checker);
                 }
             }
         }
@@ -153,11 +158,81 @@
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
                     scene.add(checker);
+                    checkers.push(checker);
                 }
             }
         }
 
-        // Animate loop
+        // Implementing the Checkers Game
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedChecker = null;
+        let isDragging = false;
+
+        // Mouse events to select and drag pieces
+        function onMouseDown(event) {
+            event.preventDefault();
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // Update raycaster to match mouse position
+            raycaster.setFromCamera(mouse, camera);
+
+            // Find intersections with checkers
+            const intersects = raycaster.intersectObjects(checkers);
+            if (intersects.length > 0) {
+                selectedChecker = intersects[0].object; // Get selected checker piece
+                isDragging = true; // Turn dragging to true
+            }
+        }
+
+        function onMouseMove(event) {
+            event.preventDefault();
+
+            if (!isDragging) return;
+
+            // Update mouse position
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // Update raycaster to match mouse position
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObject(board);
+            if (intersects.length > 0) {
+                const intersectPoint = intersects[0].point;
+
+                // Find the closest black square position
+                let closestSquare = null;
+                let minDistance = Infinity;
+
+                blackSquares.forEach(dotPosition => {
+                    const distance = Math.hypot(intersectPoint.x - dotPosition.x, intersectPoint.z - dotPosition.z);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestSquare = dotPosition;
+                    }
+                });
+
+                // Place piece on closest square
+                if (closestSquare) {
+                    selectedChecker.position.x = closestSquare.x;
+                    selectedChecker.position.z = closestSquare.z;
+                }
+            }
+        }
+
+        function onMouseUp(event) {
+            isDragging = false;
+            selectedChecker = null;
+        }
+
+        window.addEventListener('mousedown', onMouseDown, false);
+        window.addEventListener('mousemove', onMouseMove, false);
+        window.addEventListener('mouseup', onMouseUp, false);
+
+        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
