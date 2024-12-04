@@ -167,6 +167,7 @@
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let selectedChecker = null;
+        let originalPosition = new THREE.Vector3(); // Store the piece original position
         let isDragging = false;
 
         // Mouse events to select and drag pieces
@@ -179,10 +180,11 @@
             // Update raycaster to match mouse position
             raycaster.setFromCamera(mouse, camera);
 
-            // Find intersections with checkers
+            // Find intersections to match mouse position
             const intersects = raycaster.intersectObjects(checkers);
             if (intersects.length > 0) {
-                selectedChecker = intersects[0].object; // Get selected checker piece
+                selectedChecker = intersects[0].object;
+                originalPosition.copy(selectedChecker.position); // Get selected checker piece
                 isDragging = true; // Turn dragging to true
             }
         }
@@ -199,11 +201,12 @@
             // Update raycaster to match mouse position
             raycaster.setFromCamera(mouse, camera);
 
+
             const intersects = raycaster.intersectObject(board);
             if (intersects.length > 0) {
                 const intersectPoint = intersects[0].point;
 
-                // Find the closest black square position
+                // Find closest black square position
                 let closestSquare = null;
                 let minDistance = Infinity;
 
@@ -217,22 +220,34 @@
 
                 // Place piece on closest square
                 if (closestSquare) {
-                    selectedChecker.position.x = closestSquare.x;
-                    selectedChecker.position.z = closestSquare.z;
+                    selectedChecker.position.set(closestSquare.x, selectedChecker.position.y, closestSquare.z);
                 }
             }
         }
 
         function onMouseUp(event) {
+            event.preventDefault();
+
+            // If checker is placed on another checker go back to original position
+            if (isDragging && selectedChecker) {
+                const collisionDetected = checkForCollision(selectedChecker);
+                if (collisionDetected) {
+                    selectedChecker.position.copy(originalPosition);
+                }
+            }
+
             isDragging = false;
             selectedChecker = null;
+        }
+
+        function checkForCollision(checker) {
+            return checkers.some(otherChecker => otherChecker !== checker && checker.position.distanceTo(otherChecker.position) < 0.5);
         }
 
         window.addEventListener('mousedown', onMouseDown, false);
         window.addEventListener('mousemove', onMouseMove, false);
         window.addEventListener('mouseup', onMouseUp, false);
 
-        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
