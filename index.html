@@ -80,6 +80,30 @@
         floor.position.y = 0;
         scene.add(floor);
 
+        //walls code
+        const wallGeometry = new THREE.PlaneGeometry(205, 200);
+        const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+        const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.rotation.x = -90; //-Math.PI / 2;
+        wall.position.y = -13;
+        scene.add(wall);
+
+        /*const wall2 = new THREE.Mesh(floorGeometry, floorMaterial);
+        wall2.rotation.x = -90;
+        wall2.position.y = 13;
+        scene.add(wall2);
+
+        const wall3 = new THREE.Mesh(floorGeometry, floorMaterial);
+        wall3.rotation.x = -Math.PI / 2;
+        wall3.position.y = 10;
+        scene.add(wall3);
+
+        const wall4 = new THREE.Mesh(floorGeometry, floorMaterial);
+        wall4.rotation.x = -Math.PI / 2;
+        wall4.position.y = 10;
+        scene.add(wall4);*/
+
         // Board code
         const boardTexture = textureLoader.load('Checkers_Board.jpg'); // Board texture
 
