@@ -144,7 +144,7 @@
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
                     scene.add(checker);
-                    checkers.push(checker);
+                    checkers.push({piece: checker, color: 'white', i: row, j: col});
                 }
             }
         }
@@ -158,7 +158,7 @@
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
                     scene.add(checker);
-                    checkers.push(checker);
+                    checkers.push({piece: checker, color: 'black', i: row, j: col});
                 }
             }
         }
@@ -179,16 +179,17 @@
 
             // Update raycaster to match mouse position
             raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(checkers.map(c => c.piece));
 
             // Find intersections to match mouse position
-            const intersects = raycaster.intersectObjects(checkers);
             if (intersects.length > 0) {
                 selectedChecker = intersects[0].object;
                 originalPosition.copy(selectedChecker.position); // Get selected checker piece
                 isDragging = true; // Turn dragging to true
             }
         }
-
+        
+        // Mouse move events
         function onMouseMove(event) {
             event.preventDefault();
 
@@ -200,9 +201,8 @@
 
             // Update raycaster to match mouse position
             raycaster.setFromCamera(mouse, camera);
-
-
             const intersects = raycaster.intersectObject(board);
+
             if (intersects.length > 0) {
                 const intersectPoint = intersects[0].point;
 
@@ -230,24 +230,52 @@
 
             // If checker is placed on another checker go back to original position
             if (isDragging && selectedChecker) {
-                const collisionDetected = checkForCollision(selectedChecker);
-                if (collisionDetected) {
+                const checkerData = checkers.find(item => item.piece === selectedChecker);
+                if (checkerData) {
+                    // Check if a piece was captured
+                    const capturedChecker = checkForCapture(checkerData, selectedChecker);
+                    if (capturedChecker) {
+                        // Remove captured piece from the scene and checkers array
+                        scene.remove(capturedChecker.piece);
+                        const index = checkers.indexOf(capturedChecker);
+                        if (index > -1) {
+                            checkers.splice(index, 1);
+                        }
+                    }
+                }
+
+                // If the checker was moved to the same position as another piece revert it
+                const isOverlapping = checkers.some(item => 
+                    item.piece !== selectedChecker && item.piece.position.equals(selectedChecker.position)
+                );
+
+                if (isOverlapping) {
                     selectedChecker.position.copy(originalPosition);
                 }
-            }
 
-            isDragging = false;
-            selectedChecker = null;
+                isDragging = false;
+                selectedChecker = null;
+            }
         }
 
-        function checkForCollision(checker) {
-            return checkers.some(otherChecker => otherChecker !== checker && checker.position.distanceTo(otherChecker.position) < 0.5);
+        // Check for capture
+        function checkForCapture(checkerData, checker) {
+            const direction = new THREE.Vector3().subVectors(checker.position, originalPosition);
+            const capturePosition = new THREE.Vector3().addVectors(originalPosition, direction.clone().multiplyScalar(0.5));
+            const capturedChecker = checkers.find(checkPiece => {
+                if (checkPiece.color !== checkerData.color && checkPiece.piece.position.distanceTo(capturePosition) < 1) {
+                    return true;
+                }
+                return false;
+            });
+            return capturedChecker;
         }
 
         window.addEventListener('mousedown', onMouseDown, false);
         window.addEventListener('mousemove', onMouseMove, false);
         window.addEventListener('mouseup', onMouseUp, false);
 
+        // Animate function
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
