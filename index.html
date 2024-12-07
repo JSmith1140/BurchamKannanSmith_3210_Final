@@ -175,7 +175,7 @@
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
                     scene.add(checker);
-                    checkers.push({piece: checker, color: 'white', i: row, j: col});
+                    checkers.push({piece: checker, color: 'white', i: row, j: col, isKing: false});
                 }
             }
         }
@@ -189,7 +189,7 @@
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
                     scene.add(checker);
-                    checkers.push({piece: checker, color: 'black', i: row, j: col});
+                    checkers.push({piece: checker, color: 'black', i: row, j: col, isKing: false});
                 }
             }
         }
@@ -265,16 +265,16 @@
                 if (checkerData) {
                     const direction = new THREE.Vector3().subVectors(selectedChecker.position, originalPosition);
 
-                    const directionZ = checkerData.color === 'white' ? -1 : 1;
-
                     const rowOffset = Math.round(direction.z / squareSizeZ);
                     const colOffset = Math.round(direction.x / squareSizeX);
 
-                    // Check for a regular move 
-                    const isValidRegularMove = rowOffset === directionZ && (colOffset === -1 || colOffset === 1);
+                    const directionZ = checkerData.king ? 1 : checkerData.color === 'white' ? -1 : 1;
 
-                    // Check for a capture move 
-                    const isValidCaptureMove = rowOffset === 2 * directionZ && (colOffset === -2 || colOffset === 2);
+                    // Checker for a regular move and king move
+                    const isValidRegularMove = (checkerData.king ? Math.abs(rowOffset) : rowOffset) === directionZ && Math.abs(colOffset) === 1;
+
+                    // Checker for a capture move 
+                    const isValidCaptureMove = Math.abs(rowOffset) === 2 && Math.abs(colOffset) === 2;
 
                     let isMoveValid = false;
 
@@ -285,7 +285,7 @@
                         );
 
                         if (!isOverlapping) {
-                            isMoveValid = true; 
+                            isMoveValid = true;
                         }
                     } else if (isValidCaptureMove) {
                         const middleX = (originalPosition.x + selectedChecker.position.x) / 2;
@@ -299,7 +299,7 @@
                         );
 
                         if (capturedChecker) {
-                            // Remove the captured piece from the scene and the checkers array
+                            // Remove the captured piece from the scene and checkers array
                             scene.remove(capturedChecker.piece);
                             const index = checkers.indexOf(capturedChecker);
                             if (index > -1) {
@@ -311,7 +311,19 @@
                     }
 
                     if (!isMoveValid) {
-                        selectedChecker.position.copy(originalPosition); 
+                        selectedChecker.position.copy(originalPosition);
+                    } else {
+                        // Check for king promotion
+                        const newRow = checkerData.color === 'white' ? 0 : 7;
+
+                        if (Math.round(selectedChecker.position.z / squareSizeZ + 3.5) === newRow && !checkerData.king) {
+                        checkerData.king = true;
+                        if (checkerData.color === 'white') {
+                            checkerData.piece.material = new THREE.MeshStandardMaterial({ color: 0xffff00 }); // Yellow for white kings (temporary)
+                        } else if (checkerData.color === 'black') {
+                            checkerData.piece.material = new THREE.MeshStandardMaterial({ color: 0x800080 }); // Purple for black kings (temporary)
+                        }
+                    }
                     }
                 }
 
@@ -319,7 +331,7 @@
                 selectedChecker = null;
             }
         }
-        
+                
         // Check for capture
         function checkForCapture(checkerData, checker) {
             const direction = new THREE.Vector3().subVectors(checker.position, originalPosition);
