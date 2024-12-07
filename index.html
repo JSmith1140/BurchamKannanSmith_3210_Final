@@ -263,32 +263,63 @@
             if (isDragging && selectedChecker) {
                 const checkerData = checkers.find(item => item.piece === selectedChecker);
                 if (checkerData) {
-                    // Check if a piece was captured
-                    const capturedChecker = checkForCapture(checkerData, selectedChecker);
-                    if (capturedChecker) {
-                        // Remove captured piece from the scene and checkers array
-                        scene.remove(capturedChecker.piece);
-                        const index = checkers.indexOf(capturedChecker);
-                        if (index > -1) {
-                            checkers.splice(index, 1);
+                    const direction = new THREE.Vector3().subVectors(selectedChecker.position, originalPosition);
+
+                    const directionZ = checkerData.color === 'white' ? -1 : 1;
+
+                    const rowOffset = Math.round(direction.z / squareSizeZ);
+                    const colOffset = Math.round(direction.x / squareSizeX);
+
+                    // Check for a regular move 
+                    const isValidRegularMove = rowOffset === directionZ && (colOffset === -1 || colOffset === 1);
+
+                    // Check for a capture move 
+                    const isValidCaptureMove = rowOffset === 2 * directionZ && (colOffset === -2 || colOffset === 2);
+
+                    let isMoveValid = false;
+
+                    if (isValidRegularMove) {
+                        const isOverlapping = checkers.some(checkerPiece =>
+                            checkerPiece.piece !== selectedChecker &&
+                            checkerPiece.piece.position.equals(selectedChecker.position)
+                        );
+
+                        if (!isOverlapping) {
+                            isMoveValid = true; 
+                        }
+                    } else if (isValidCaptureMove) {
+                        const middleX = (originalPosition.x + selectedChecker.position.x) / 2;
+                        const middleZ = (originalPosition.z + selectedChecker.position.z) / 2;
+
+                        // Find the piece being captured
+                        const capturedChecker = checkers.find(capturedPiece =>
+                            capturedPiece.piece.position.x === middleX &&
+                            capturedPiece.piece.position.z === middleZ &&
+                            capturedPiece.color !== checkerData.color
+                        );
+
+                        if (capturedChecker) {
+                            // Remove the captured piece from the scene and the checkers array
+                            scene.remove(capturedChecker.piece);
+                            const index = checkers.indexOf(capturedChecker);
+                            if (index > -1) {
+                                checkers.splice(index, 1);
+                            }
+
+                            isMoveValid = true;
                         }
                     }
-                }
 
-                // If the checker was moved to the same position as another piece revert it
-                const isOverlapping = checkers.some(item => 
-                    item.piece !== selectedChecker && item.piece.position.equals(selectedChecker.position)
-                );
-
-                if (isOverlapping) {
-                    selectedChecker.position.copy(originalPosition);
+                    if (!isMoveValid) {
+                        selectedChecker.position.copy(originalPosition); 
+                    }
                 }
 
                 isDragging = false;
                 selectedChecker = null;
             }
         }
-
+        
         // Check for capture
         function checkForCapture(checkerData, checker) {
             const direction = new THREE.Vector3().subVectors(checker.position, originalPosition);
