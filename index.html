@@ -6,7 +6,9 @@
 <body>
 
     <canvas id="myCanvas"></canvas>
-
+    <div id="turnDisplay" style="position: absolute; top: 10px; left: 10px; color: white; background-color: black; padding: 10px; font-size: 50px; border-radius: 5px;">
+        Turn: White
+    </div>
     <script type="module">
         import * as THREE from 'three';
 
@@ -201,6 +203,67 @@
         let originalPosition = new THREE.Vector3(); // Store the piece original position
         let isDragging = false;
 
+        const turnDisplay = document.getElementById('turnDisplay');
+
+        let currentTurn = 'white';
+        function switchTurn() { // Visual text to show whos turn it is 
+            currentTurn = currentTurn === 'white' ? 'black' : 'white';
+            turnDisplay.textContent = `Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
+        }
+
+        // Function to make sure jumps won't be registered if they go off board
+        function isValidPosition(x, z) {
+            const halfBoardWidthX = (squareSizeX * 4); // Half of the board's width
+            const halfBoardWidthZ = (squareSizeZ * 4); // Half of the board's height
+
+            return (
+                x >= -halfBoardWidthX && x <= halfBoardWidthX &&
+                z >= -halfBoardWidthZ && z <= halfBoardWidthZ
+            );
+        }
+
+        function additionalCapture(checkerData) {
+            const directions = [
+                { row: -2, col: -2 }, { row: -2, col: 2 }, 
+                { row: 2, col: -2 }, { row: 2, col: 2 } 
+            ];
+
+            for (const dir of directions) {
+                const newX = checkerData.piece.position.x + dir.col * squareSizeX;
+                const newZ = checkerData.piece.position.z + dir.row * squareSizeZ;
+
+                const middleX = (checkerData.piece.position.x + newX) / 2;
+                const middleZ = (checkerData.piece.position.z + newZ) / 2;
+
+                if (!isValidPosition(newX, newZ)) {
+                    continue;
+                }
+
+                // Check if there's an opponent piece to capture
+                const capturedChecker = checkers.find(capturedPiece =>
+                    capturedPiece.piece.position.x === middleX &&
+                    capturedPiece.piece.position.z === middleZ &&
+                    capturedPiece.color !== checkerData.color
+                );
+
+                const isOverlapping = checkers.some(checkerPiece =>
+                    checkerPiece.piece.position.x === newX &&
+                    checkerPiece.piece.position.z === newZ
+                );
+
+                if (capturedChecker && !isOverlapping) {
+                    const isForwardCapture = checkerData.color === 'white' ? dir.row === -2 : dir.row === 2;
+                    const isBackwardCapture = checkerData.king && (checkerData.color === 'white' ? dir.row === 2 : dir.row === -2);
+
+                    if (checkerData.king || isForwardCapture || isBackwardCapture) {
+                        return true; // A capture is possible
+                    }
+                }
+            }
+
+            return false; // No additional capture
+        }
+
         // Mouse events to select and drag pieces
         function onMouseDown(event) {
             event.preventDefault();
@@ -208,15 +271,17 @@
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-            // Update raycaster to match mouse position
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(checkers.map(c => c.piece));
 
-            // Find intersections to match mouse position
             if (intersects.length > 0) {
-                selectedChecker = intersects[0].object;
-                originalPosition.copy(selectedChecker.position); // Get selected checker piece
-                isDragging = true; // Turn dragging to true
+                const checkerData = checkers.find(item => item.piece === intersects[0].object);
+
+                if (checkerData.color === currentTurn) { // Only allow the current player's turn
+                    selectedChecker = checkerData.piece;
+                    originalPosition.copy(selectedChecker.position);
+                    isDragging = true;
+                }
             }
         }
         
@@ -262,21 +327,24 @@
             // If checker is placed on another checker go back to original position
             if (isDragging && selectedChecker) {
                 const checkerData = checkers.find(item => item.piece === selectedChecker);
-                if (checkerData) {
+
+                if (checkerData && checkerData.color === currentTurn) { 
                     const direction = new THREE.Vector3().subVectors(selectedChecker.position, originalPosition);
 
                     const rowOffset = Math.round(direction.z / squareSizeZ);
                     const colOffset = Math.round(direction.x / squareSizeX);
 
-                    const directionZ = checkerData.king ? 1 : checkerData.color === 'white' ? -1 : 1;
+                    // Check for a regular move and king move
+                    const isValidRegularMove = Math.abs(rowOffset) === 1 && Math.abs(colOffset) === 1;
 
-                    // Checker for a regular move and king move
-                    const isValidRegularMove = (checkerData.king ? Math.abs(rowOffset) : rowOffset) === directionZ && Math.abs(colOffset) === 1;
-
-                    // Checker for a capture move 
+                    // Check for a capture move
                     const isValidCaptureMove = Math.abs(rowOffset) === 2 && Math.abs(colOffset) === 2;
 
                     let isMoveValid = false;
+
+                    // Determine if the movement is valid for kings or regular pieces
+                    const isForwardMove = checkerData.color === 'white' ? rowOffset === -1 : rowOffset === 1;
+                    const isBackwardMove = checkerData.king && (checkerData.color === 'white' ? rowOffset === 1 : rowOffset === -1);
 
                     if (isValidRegularMove) {
                         const isOverlapping = checkers.some(checkerPiece =>
@@ -285,7 +353,10 @@
                         );
 
                         if (!isOverlapping) {
-                            isMoveValid = true;
+                            // Allow kings to move in any direction
+                            if (checkerData.king || isForwardMove || isBackwardMove) {
+                                isMoveValid = true;
+                            }
                         }
                     } else if (isValidCaptureMove) {
                         const middleX = (originalPosition.x + selectedChecker.position.x) / 2;
@@ -298,51 +369,47 @@
                             capturedPiece.color !== checkerData.color
                         );
 
-                        if (capturedChecker) {
-                            // Remove the captured piece from the scene and checkers array
+                        // Allow kings to capture forward or backward
+                        const isForwardCapture = rowOffset === (checkerData.color === 'white' ? -2 : 2);
+                        const isBackwardCapture = checkerData.king && rowOffset === (checkerData.color === 'white' ? 2 : -2);
+
+                        if ((isForwardCapture || isBackwardCapture) && capturedChecker) {
+                            // Remove captured piece from the scene and checkers array
                             scene.remove(capturedChecker.piece);
                             const index = checkers.indexOf(capturedChecker);
                             if (index > -1) {
                                 checkers.splice(index, 1);
                             }
-
                             isMoveValid = true;
                         }
                     }
-
                     if (!isMoveValid) {
+                        // return the piece to its original position if its not a valid move
                         selectedChecker.position.copy(originalPosition);
                     } else {
                         // Check for king promotion
                         const newRow = checkerData.color === 'white' ? 0 : 7;
 
+                        // Promote to King if a piece reaches the last row
                         if (Math.round(selectedChecker.position.z / squareSizeZ + 3.5) === newRow && !checkerData.king) {
-                        checkerData.king = true;
-                        if (checkerData.color === 'white') {
-                            checkerData.piece.material = new THREE.MeshStandardMaterial({ color: 0xffff00 }); // Yellow for white kings (temporary)
-                        } else if (checkerData.color === 'black') {
-                            checkerData.piece.material = new THREE.MeshStandardMaterial({ color: 0x800080 }); // Purple for black kings (temporary)
+                            checkerData.king = true;
+                            // Yellow king for white and Purple king for black
+                            checkerData.piece.material = new THREE.MeshStandardMaterial({ color: checkerData.color === 'white' ? 0xffff00 : 0x800080 });
+                        }
+
+                        // Check if the player can make another capture
+                        const canMakeAnotherCapture = isValidCaptureMove && additionalCapture(checkerData);
+
+                        if (canMakeAnotherCapture) {
+                            turnDisplay.textContent = `Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
+                        } else {
+                            switchTurn(); // Switch turn if no further captures are possible
                         }
                     }
-                    }
                 }
-
                 isDragging = false;
                 selectedChecker = null;
             }
-        }
-                
-        // Check for capture
-        function checkForCapture(checkerData, checker) {
-            const direction = new THREE.Vector3().subVectors(checker.position, originalPosition);
-            const capturePosition = new THREE.Vector3().addVectors(originalPosition, direction.clone().multiplyScalar(0.5));
-            const capturedChecker = checkers.find(checkPiece => {
-                if (checkPiece.color !== checkerData.color && checkPiece.piece.position.distanceTo(capturePosition) < 1) {
-                    return true;
-                }
-                return false;
-            });
-            return capturedChecker;
         }
 
         window.addEventListener('mousedown', onMouseDown, false);
