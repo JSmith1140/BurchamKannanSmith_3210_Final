@@ -97,19 +97,23 @@
         wall2.position.z = 100;
         scene.add(wall2);
 
-        /*const wall3 = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall3.rotation.y = Math.PI / 2;
-        wall3.position.x = 0;
-        wall3.position.y = 0;
+        const wall3Geometry = new THREE.PlaneGeometry(200, 100);
+        const wall3Material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const wall3 = new THREE.Mesh(wall3Geometry, wall3Material);
+        wall3.rotation.y = Math.PI / 2
+        wall3.position.x = -100;
+        wall3.position.y = 50;
         wall3.position.z = 0;
         scene.add(wall3);
 
-        const wall4 = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall4.rotation.y = Math.PI / 2;
-        wall4.position.x = 0;
-        wall4.position.y = 0;
+        const wall4Geometry = new THREE.PlaneGeometry(200, 100);
+        const wall4Material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const wall4 = new THREE.Mesh(wall4Geometry, wall4Material);
+        wall4.rotation.y = -Math.PI / 2;
+        wall4.position.x = 100;
+        wall4.position.y = 50;
         wall4.position.z = 0;
-        scene.add(wall4);*/
+        scene.add(wall4);
 
         // Board code
         const boardTexture = textureLoader.load('Checkers_Board.jpg'); // Board texture
