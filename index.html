@@ -304,43 +304,43 @@
         let currentTurn = 'white';
         
         let isAnimatingCamera = false;
-const animationDuration = 1.5; // seconds
-let animationProgress = 0;
-let startCameraPosition = new THREE.Vector3();
-let targetCameraPosition = new THREE.Vector3();
+        const animationDuration = 1.5; // seconds
+        let animationProgress = 0;
+        let startCameraPosition = new THREE.Vector3();
+        let targetCameraPosition = new THREE.Vector3();
 
-function switchTurn() {
-    if (isAnimatingCamera) return; // Avoid switching while animating
+        function switchTurn() {
+            if (isAnimatingCamera) return; // Avoid switching while animating
 
-    currentTurn = currentTurn === 'white' ? 'black' : 'white';
-    turnDisplay.textContent = `Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
+            currentTurn = currentTurn === 'white' ? 'black' : 'white';
+            turnDisplay.textContent = `Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
 
-    // Set up the camera animation
-    isAnimatingCamera = true;
-    animationProgress = 0;
-    startCameraPosition.copy(camera.position);
+            // Set up the camera animation
+            isAnimatingCamera = true;
+            animationProgress = 0;
+            startCameraPosition.copy(camera.position);
 
-    if (currentTurn === 'white') {
-        targetCameraPosition.set(0, 35, 35); // White's side
-    } else {
-        targetCameraPosition.set(0, 35, -35); // Black's side
-    }
-}
-
-// Function to smoothly animate the camera
-function animateCamera(deltaTime) {
-    if (isAnimatingCamera) {
-        animationProgress += deltaTime / animationDuration;
-        if (animationProgress >= 1) {
-            animationProgress = 1;
-            isAnimatingCamera = false;
+            if (currentTurn === 'white') {
+                targetCameraPosition.set(0, 35, 35); // White's side
+            } else {
+                targetCameraPosition.set(0, 35, -35); // Black's side
+            }
         }
 
-        // Interpolate between start and target positions
-        camera.position.lerpVectors(startCameraPosition, targetCameraPosition, animationProgress);
-        camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the camera always looks at the center
-    }
-}
+        // Function to smoothly animate the camera
+        function animateCamera(deltaTime) {
+            if (isAnimatingCamera) {
+                animationProgress += deltaTime / animationDuration;
+                if (animationProgress >= 1) {
+                    animationProgress = 1;
+                    isAnimatingCamera = false;
+                }
+
+                // Interpolate between start and target positions
+                camera.position.lerpVectors(startCameraPosition, targetCameraPosition, animationProgress);
+                camera.lookAt(new THREE.Vector3(0, 0, 0)); // Ensure the camera always looks at the center
+            }
+        }
 
         // Function to make sure jumps won't be registered if they go off board
         function isValidPosition(x, z) {
