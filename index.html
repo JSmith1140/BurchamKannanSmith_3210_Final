@@ -40,6 +40,35 @@
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Temporary Ambient Light
         scene.add(ambientLight);
 
+        const helpMenu = document.getElementById('helpMenu');
+        const closeButton = document.getElementById('closeButton');
+        var helpEnabled = false;
+
+        document.addEventListener('keydown', keyHandler);
+
+        closeButton.addEventListener('click', () => {
+            toggleHelp();
+        });
+
+        // Function to handle key events
+        function keyHandler(e) {
+            switch (e.keyCode) {
+                case 72: // 'H' key
+                    toggleHelp();
+                    break;
+            }
+        }
+
+        // Function to toggle the help menu
+        function toggleHelp() {
+            helpEnabled = !helpEnabled;
+            if (helpEnabled) {
+                helpMenu.style.display = 'block';  // Show help menu
+            } else {
+                helpMenu.style.display = 'none';  // Hide help menu
+            }
+        }
+
         // Table Code
         const textureLoader = new THREE.TextureLoader();
         const tabletopTexture = textureLoader.load('Table_Wood.jpg'); // tabletop texture
