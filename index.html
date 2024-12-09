@@ -83,25 +83,25 @@
         scene.add(floor);
 
         //walls code
+        const wallTexture = textureLoader.load('Walls.jpg');
+        const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
+
         const wall1Geometry = new THREE.PlaneGeometry(200, 100);
-        const wall1Material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const wall1 = new THREE.Mesh(wall1Geometry, wall1Material);
+        const wall1 = new THREE.Mesh(wall1Geometry, wallMaterial);
         wall1.position.x = 0;
         wall1.position.y = 50;
         wall1.position.z = -100;
         scene.add(wall1);
 
         const wall2Geometry = new THREE.PlaneGeometry(200, 100);
-        const wall2Material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const wall2 = new THREE.Mesh(wall2Geometry, wall2Material);
+        const wall2 = new THREE.Mesh(wall2Geometry, wallMaterial);
         wall2.position.x = 0;
         wall2.position.y = 50;
         wall2.position.z = 100;
         scene.add(wall2);
 
         const wall3Geometry = new THREE.PlaneGeometry(200, 100);
-        const wall3Material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const wall3 = new THREE.Mesh(wall3Geometry, wall3Material);
+        const wall3 = new THREE.Mesh(wall3Geometry, wallMaterial);
         wall3.rotation.y = Math.PI / 2
         wall3.position.x = -100;
         wall3.position.y = 50;
@@ -109,8 +109,7 @@
         scene.add(wall3);
 
         const wall4Geometry = new THREE.PlaneGeometry(200, 100);
-        const wall4Material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const wall4 = new THREE.Mesh(wall4Geometry, wall4Material);
+        const wall4 = new THREE.Mesh(wall4Geometry, wallMaterial);
         wall4.rotation.y = -Math.PI / 2;
         wall4.position.x = 100;
         wall4.position.y = 50;
