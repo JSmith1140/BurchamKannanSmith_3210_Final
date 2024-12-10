@@ -87,8 +87,27 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Temporary Ambient Light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Ambient Light
         scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1000, 48);
+        pointLight.position.set(0, 50, 0);
+        scene.add(pointLight);
+
+        let lastFlickerTime = 0; 
+        let flickerCount = 0;
+        let flickerInProgress = false;
+
+        function flickerLight() {
+            if (flickerCount < 10) { // Flicker off and on 5 times
+                pointLight.visible = !pointLight.visible;
+                flickerCount++; // Update flickerCount
+            } else {
+                flickerInProgress = false; 
+                flickerCount = 0; // Reset flickerCount
+                pointLight.visible = true; 
+            }
+        }
 
         const helpMenu = document.getElementById('helpMenu');
         const closeButton = document.getElementById('closeButton');
@@ -548,13 +567,32 @@
         window.addEventListener('mouseup', onMouseUp, false);
 
         // Animate function
-        function animate() {
+        function animate(time) {
             requestAnimationFrame(animate);
              const deltaTime = clock.getDelta(); // Time elapsed since last frame
+
+             const delta = time - lastFlickerTime;
+
+             // Start flickering after 5 seconds
+            if (!flickerInProgress && delta >= 5000) {
+                flickerInProgress = true;
+                setTimeout(flickerLight, 0); 
+                lastFlickerTime = time; 
+            }
+
+            // If the flicker is in progress, continue toggling the light state
+            if (flickerInProgress) {
+                if (delta >= 150) { 
+                    flickerLight();
+                    lastFlickerTime = time;
+                }
+            }
+
             animateCamera(deltaTime);
             renderer.render(scene, camera);
         }
-const clock = new THREE.Clock();
+        const clock = new THREE.Clock();
+        
         animate();
     </script>
 </body>
