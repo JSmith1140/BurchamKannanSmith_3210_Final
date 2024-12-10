@@ -63,6 +63,7 @@
         <div class="content">
             <h2>Controls & Rules:</h2>
             <p><b>Mouse Drag and Drop</b> Select a piece to move and drop it on a square</p>
+            <p><b>A:</b> Toggle on or off the ambient light</p>
             <p><b>P:</b> Toggle on or off the point light</p>
             <p><b>M:</b> Toggle on or off the shadows</p>
             <p><b>H:</b> Show this menu</p>
@@ -97,13 +98,14 @@
         let lastFlickerTime = 0; 
         let flickerCount = 0;
         let flickerInProgress = false;
+        let pointlightOn = true;
 
         function flickerLight() {
-            if (flickerCount < 10) { // Flicker off and on 5 times
+            if (flickerCount < 10 && pointlightOn) { // Flicker off and on 5 times
                 pointLight.visible = !pointLight.visible;
-                flickerCount++; // Update flickerCount
+                flickerCount++;
             } else {
-                flickerInProgress = false; 
+                flickerInProgress = false;
                 flickerCount = 0; // Reset flickerCount
                 pointLight.visible = true; 
             }
@@ -124,6 +126,15 @@
             switch (e.keyCode) {
                 case 72: // 'H' key
                     toggleHelp();
+                    break;
+                case 80: // 'P' key
+                    pointlightOn = !pointlightOn; 
+                    pointLight.visible = pointlightOn; 
+                    flickerInProgress = false; 
+                    flickerCount = 0; 
+                    break;
+                case 65: // 'A' key 
+                    ambientLight.visible = !ambientLight.visible;
                     break;
             }
         }
@@ -574,7 +585,7 @@
              const delta = time - lastFlickerTime;
 
              // Start flickering after 5 seconds
-            if (!flickerInProgress && delta >= 5000) {
+            if (!flickerInProgress && delta >= 5000 && pointlightOn) {
                 flickerInProgress = true;
                 setTimeout(flickerLight, 0); 
                 lastFlickerTime = time; 
