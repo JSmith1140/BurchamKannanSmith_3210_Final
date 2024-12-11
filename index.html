@@ -96,15 +96,13 @@
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Ambient Light
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1000, 48);
+        const pointLight = new THREE.PointLight(0xffffff, 3000, 48);
         pointLight.position.set(0, 50, 0);
+        pointLight.castShadow = true;
         scene.add(pointLight);
-
-        const shadowLight = new THREE.DirectionalLight(0xffffff, 1);
-        shadowLight.position.set(10, 10, 10);
-        shadowLight.castShadow = true;
-        scene.add(shadowLight);
-
+        pointLight.shadow.mapSize.width = 1024;
+        pointLight.shadow.mapSize.height = 1024;
+        
         let lastFlickerTime = 0; 
         let flickerCount = 0;
         let flickerInProgress = false;
@@ -163,6 +161,7 @@
         const textureLoader = new THREE.TextureLoader();
         const tabletopTexture = textureLoader.load('Table_Wood.jpg'); // tabletop texture
         const legTexture = textureLoader.load('Table_Wood.jpg'); // table leg texture
+        const chairTexture = textureLoader.load('Chair_Wood.jpg'); // chair texture
         const floorTexture = textureLoader.load('Floor_Tile.jpg'); // floor texture
         floorTexture.wrapS = THREE.RepeatWrapping;
         floorTexture.wrapT = THREE.RepeatWrapping;
@@ -180,7 +179,7 @@
         const tabletop = new THREE.Mesh(tabletopGeometry, tabletopMaterial);
         tabletop.position.set(0, tableHeight - tabletopHeight / 2, 0); 
         tabletop.castShadow = true;
-        tabletop.receiveShadow = true;
+        tabletop.recieveShadow = true;
         scene.add(tabletop);
 
         // Create the table legs
@@ -205,8 +204,6 @@
         legPositions.forEach(pos => {
             const leg = new THREE.Mesh(legGeometry, legMaterial);
             leg.position.set(pos.x, pos.y, pos.z);
-            leg.castShadow = true;
-            leg.receiveShadow = true;
             scene.add(leg);
         });
 
@@ -216,8 +213,6 @@
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         floor.position.y = 0;
-        floor.castShadow = true;
-        floor.receiveShadow = true;
         scene.add(floor);
 
         //walls code
@@ -229,8 +224,6 @@
         wall1.position.x = 0;
         wall1.position.y = 50;
         wall1.position.z = -100;
-        wall1.castShadow = true;
-        wall1.receiveShadow = true;
         scene.add(wall1);
 
         const wall2Geometry = new THREE.PlaneGeometry(200, 100);
@@ -239,8 +232,6 @@
         wall2.position.y = 50;
         wall2.position.z = 100;
         wall2.rotation.y = Math.PI; // rotate the wall so textured side is shown
-        wall2.castShadow = true;
-        wall2.receiveShadow = true;
         scene.add(wall2);
 
         const wall3Geometry = new THREE.PlaneGeometry(200, 100);
@@ -249,8 +240,6 @@
         wall3.position.x = -100;
         wall3.position.y = 50;
         wall3.position.z = 0;
-        wall3.castShadow = true;
-        wall3.receiveShadow = true;
         scene.add(wall3);
 
         const wall4Geometry = new THREE.PlaneGeometry(200, 100);
@@ -259,8 +248,6 @@
         wall4.position.x = 100;
         wall4.position.y = 50;
         wall4.position.z = 0;
-        wall4.castShadow = true;
-        wall4.receiveShadow = true;
         scene.add(wall4);
 
         // Board code
@@ -279,9 +266,9 @@
         const boardMaterial = new THREE.MeshStandardMaterial({map: boardTexture});
         const board = new THREE.Mesh(boardGeometry, boardMaterial);
         board.rotation.x = -Math.PI / 2;
-        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.05, 0);
+        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.05, 0); 
         board.castShadow = true;
-        board.receiveShadow = true; 
+        board.receiveShadow = true;
         scene.add(board);
 
         
@@ -327,6 +314,8 @@
                     checker.position.x = (col - 3.5) * squareSizeX;
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
+                    checker.castShadow = true; // Allow checker pieces to cast shadows
+                    checker.receiveShadow = true;
                     scene.add(checker);
                     checkers.push({piece: checker, color: 'white', i: row, j: col, isKing: false});
                 }
@@ -341,6 +330,8 @@
                     checker.position.x = (col - 3.5) * squareSizeX;
                     checker.position.z = (row - 3.5) * squareSizeZ;
                     checker.position.y = tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.15; // Slightly above the board surface
+                    checker.castShadow = true; // Allow checker pieces to cast shadows
+                    checker.receiveShadow = true;
                     scene.add(checker);
                     checkers.push({piece: checker, color: 'black', i: row, j: col, isKing: false});
                 }
