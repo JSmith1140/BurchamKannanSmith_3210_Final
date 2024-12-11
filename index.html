@@ -90,6 +90,8 @@
         renderer.setClearColor(0x000000);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Ambient Light
         scene.add(ambientLight);
@@ -97,6 +99,11 @@
         const pointLight = new THREE.PointLight(0xffffff, 1000, 48);
         pointLight.position.set(0, 50, 0);
         scene.add(pointLight);
+
+        const shadowLight = THREE.DirectionalLight(0xffffff, 1);
+        shadowLight.position.set(10, 10, 10);
+        shadowLight.castShadow = true;
+        scene.add(shadowLight);
 
         let lastFlickerTime = 0; 
         let flickerCount = 0;
@@ -172,6 +179,8 @@
         const tabletopMaterial = new THREE.MeshStandardMaterial({map: tabletopTexture});
         const tabletop = new THREE.Mesh(tabletopGeometry, tabletopMaterial);
         tabletop.position.set(0, tableHeight - tabletopHeight / 2, 0); 
+        tabletop.castShadow = true;
+        tabletop.receiveShadow = true;
         scene.add(tabletop);
 
         // Create the table legs
@@ -196,6 +205,8 @@
         legPositions.forEach(pos => {
             const leg = new THREE.Mesh(legGeometry, legMaterial);
             leg.position.set(pos.x, pos.y, pos.z);
+            leg.castShadow = true;
+            leg.receiveShadow = true;
             scene.add(leg);
         });
 
@@ -205,6 +216,8 @@
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         floor.position.y = 0;
+        floor.castShadow = true;
+        floor.receiveShadow = true;
         scene.add(floor);
 
         //walls code
@@ -216,6 +229,8 @@
         wall1.position.x = 0;
         wall1.position.y = 50;
         wall1.position.z = -100;
+        wall1.castShadow = true;
+        wall1.receiveShadow = true;
         scene.add(wall1);
 
         const wall2Geometry = new THREE.PlaneGeometry(200, 100);
@@ -224,6 +239,8 @@
         wall2.position.y = 50;
         wall2.position.z = 100;
         wall2.rotation.y = Math.PI; // rotate the wall so textured side is shown
+        wall2.castShadow = true;
+        wall2.receiveShadow = true;
         scene.add(wall2);
 
         const wall3Geometry = new THREE.PlaneGeometry(200, 100);
@@ -232,6 +249,8 @@
         wall3.position.x = -100;
         wall3.position.y = 50;
         wall3.position.z = 0;
+        wall3.castShadow = true;
+        wall3.receiveShadow = true;
         scene.add(wall3);
 
         const wall4Geometry = new THREE.PlaneGeometry(200, 100);
@@ -240,6 +259,8 @@
         wall4.position.x = 100;
         wall4.position.y = 50;
         wall4.position.z = 0;
+        wall4.castShadow = true;
+        wall4.receiveShadow = true;
         scene.add(wall4);
 
         // Board code
