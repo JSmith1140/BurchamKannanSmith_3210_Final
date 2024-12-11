@@ -157,7 +157,7 @@
             }
         }
 
-        // Table Code
+       // Table Code
         const textureLoader = new THREE.TextureLoader();
         const tabletopTexture = textureLoader.load('Table_Wood.jpg'); // tabletop texture
         const legTexture = textureLoader.load('Table_Wood.jpg'); // table leg texture
@@ -178,8 +178,6 @@
         const tabletopMaterial = new THREE.MeshStandardMaterial({map: tabletopTexture});
         const tabletop = new THREE.Mesh(tabletopGeometry, tabletopMaterial);
         tabletop.position.set(0, tableHeight - tabletopHeight / 2, 0); 
-        tabletop.castShadow = true;
-        tabletop.recieveShadow = true;
         scene.add(tabletop);
 
         // Create the table legs
@@ -205,6 +203,78 @@
             const leg = new THREE.Mesh(legGeometry, legMaterial);
             leg.position.set(pos.x, pos.y, pos.z);
             scene.add(leg);
+        });
+
+        // Chair Code
+        const chairHeight = 10;
+        const seatHeight = 3;
+        const seatWidth = 20;
+        const seatDepth = 20;
+        const chairLegHeight = chairHeight - seatHeight;
+        const backrestHeight = 15;
+
+        const seatGeometry = new THREE.BoxGeometry(seatWidth, seatHeight, seatDepth);
+        const seatMaterial = new THREE.MeshStandardMaterial({ map: chairTexture }); // chair texture
+        const seat = new THREE.Mesh(seatGeometry, seatMaterial);
+        seat.position.set(0, chairLegHeight + seatHeight / 2, -(tabletopWidth / 2 + seatDepth / 2 + 5)); // Position at the end of the table
+        scene.add(seat);
+
+        // Chair backrest
+        const backrestGeometry = new THREE.BoxGeometry(seatWidth, backrestHeight, seatHeight);
+        const backrestMaterial = new THREE.MeshStandardMaterial({ map: chairTexture }); // chair texture
+        const backrest = new THREE.Mesh(backrestGeometry, backrestMaterial);
+        backrest.position.set(0, chairLegHeight + seatHeight + backrestHeight / 2, -(tabletopWidth / 2 + seatDepth + 5));
+        scene.add(backrest);
+
+        const chairLegRadiusTop = 1;
+        const chairLegRadiusBottom = 1;
+        const chairLegSegments = 16;
+
+        // Chair legs
+        const chairLegGeometry = new THREE.CylinderGeometry(chairLegRadiusTop, chairLegRadiusBottom, legHeight, chairLegSegments);
+        const chairLegMaterial = new THREE.MeshStandardMaterial({ map: chairTexture }); // chair texture
+
+        const chairLegOffsetX = seatWidth / 2 - chairLegRadiusTop;
+        const chairLegOffsetZ = seatDepth / 2 - chairLegRadiusTop;
+
+        const chairLegPositions = [
+            { x: -chairLegOffsetX, y: chairLegHeight / 2, z: -(tabletopWidth / 2 + seatDepth / 2 + 5) - chairLegOffsetZ }, // leg 1
+            { x: chairLegOffsetX, y: chairLegHeight / 2, z: -(tabletopWidth / 2 + seatDepth / 2 + 5) - chairLegOffsetZ },  // leg 2
+            { x: -chairLegOffsetX, y: chairLegHeight / 2, z: -(tabletopWidth / 2 + seatDepth / 2 + 5) + chairLegOffsetZ }, // leg 3
+            { x: chairLegOffsetX, y: chairLegHeight / 2, z: -(tabletopWidth / 2 + seatDepth / 2 + 5) + chairLegOffsetZ },  // leg 4
+        ];
+
+        chairLegPositions.forEach(pos => {
+            const chairLeg = new THREE.Mesh(chairLegGeometry, chairLegMaterial);
+            chairLeg.position.set(pos.x, pos.y, pos.z);
+            scene.add(chairLeg);
+        });
+
+        // Second Chair Code
+        const secondSeatMaterial = new THREE.MeshStandardMaterial({ map: chairTexture });
+        const secondBackrestMaterial = new THREE.MeshStandardMaterial({ map: chairTexture });
+        const secondChairLegMaterial = new THREE.MeshStandardMaterial({ map: chairTexture });
+
+        const secondSeat = new THREE.Mesh(seatGeometry, secondSeatMaterial);
+        secondSeat.position.set(0, chairLegHeight + seatHeight / 2, tabletopWidth / 2 + seatDepth / 2 + 5); // Position at the positive Z end of the table
+        scene.add(secondSeat);
+
+        // Second chair backrest
+        const secondBackrest = new THREE.Mesh(backrestGeometry, secondBackrestMaterial);
+        secondBackrest.position.set(0, chairLegHeight + seatHeight + backrestHeight / 2, tabletopWidth / 2 + seatDepth + 5);
+        scene.add(secondBackrest);
+
+        const secondChairLegPositions = [
+            { x: -chairLegOffsetX, y: chairLegHeight / 2, z: tabletopWidth / 2 + seatDepth / 2 + 5 - chairLegOffsetZ }, // leg 1
+            { x: chairLegOffsetX, y: chairLegHeight / 2, z: tabletopWidth / 2 + seatDepth / 2 + 5 - chairLegOffsetZ },  // leg 2
+            { x: -chairLegOffsetX, y: chairLegHeight / 2, z: tabletopWidth / 2 + seatDepth / 2 + 5 + chairLegOffsetZ }, // leg 3
+            { x: chairLegOffsetX, y: chairLegHeight / 2, z: tabletopWidth / 2 + seatDepth / 2 + 5 + chairLegOffsetZ },  // leg 4
+        ];
+
+        secondChairLegPositions.forEach(pos => {
+            const secondChairLeg = new THREE.Mesh(chairLegGeometry, secondChairLegMaterial);
+            secondChairLeg.position.set(pos.x, pos.y, pos.z);
+            scene.add(secondChairLeg);
         });
 
         // Floor Code
