@@ -568,97 +568,127 @@
             }
         }
 
-        function onMouseUp(event) {
-            event.preventDefault();
+        const capturedPieces = { white: [], black: [] }; // Track captured pieces
 
-            // If checker is placed on another checker go back to original position
-            if (isDragging && selectedChecker) {
-                const checkerData = checkers.find(item => item.piece === selectedChecker);
+function onMouseUp(event) {
+    event.preventDefault();
 
-                if (checkerData && checkerData.color === currentTurn) { 
-                    const direction = new THREE.Vector3().subVectors(selectedChecker.position, originalPosition);
+    if (isDragging && selectedChecker) {
+        const checkerData = checkers.find(item => item.piece === selectedChecker);
 
-                    const rowOffset = Math.round(direction.z / squareSizeZ);
-                    const colOffset = Math.round(direction.x / squareSizeX);
+        if (checkerData && checkerData.color === currentTurn) { 
+            const direction = new THREE.Vector3().subVectors(selectedChecker.position, originalPosition);
+            const rowOffset = Math.round(direction.z / squareSizeZ);
+            const colOffset = Math.round(direction.x / squareSizeX);
 
-                    // Check for a regular move and king move
-                    const isValidRegularMove = Math.abs(rowOffset) === 1 && Math.abs(colOffset) === 1;
+            const isValidRegularMove = Math.abs(rowOffset) === 1 && Math.abs(colOffset) === 1;
+            const isValidCaptureMove = Math.abs(rowOffset) === 2 && Math.abs(colOffset) === 2;
 
-                    // Check for a capture move
-                    const isValidCaptureMove = Math.abs(rowOffset) === 2 && Math.abs(colOffset) === 2;
+            let isMoveValid = false;
 
-                    let isMoveValid = false;
+            const isForwardMove = checkerData.color === 'white' ? rowOffset === -1 : rowOffset === 1;
+            const isBackwardMove = checkerData.king && (checkerData.color === 'white' ? rowOffset === 1 : rowOffset === -1);
 
-                    // Determine if the movement is valid for kings or regular pieces
-                    const isForwardMove = checkerData.color === 'white' ? rowOffset === -1 : rowOffset === 1;
-                    const isBackwardMove = checkerData.king && (checkerData.color === 'white' ? rowOffset === 1 : rowOffset === -1);
+            if (isValidRegularMove) {
+                const isOverlapping = checkers.some(checkerPiece =>
+                    checkerPiece.piece !== selectedChecker &&
+                    checkerPiece.piece.position.equals(selectedChecker.position)
+                );
 
-                    if (isValidRegularMove) {
-                        const isOverlapping = checkers.some(checkerPiece =>
-                            checkerPiece.piece !== selectedChecker &&
-                            checkerPiece.piece.position.equals(selectedChecker.position)
-                        );
-
-                        if (!isOverlapping) {
-                            // Allow kings to move in any direction
-                            if (checkerData.king || isForwardMove || isBackwardMove) {
-                                isMoveValid = true;
-                            }
-                        }
-                    } else if (isValidCaptureMove) {
-                        const middleX = (originalPosition.x + selectedChecker.position.x) / 2;
-                        const middleZ = (originalPosition.z + selectedChecker.position.z) / 2;
-
-                        // Find the piece being captured
-                        const capturedChecker = checkers.find(capturedPiece =>
-                            capturedPiece.piece.position.x === middleX &&
-                            capturedPiece.piece.position.z === middleZ &&
-                            capturedPiece.color !== checkerData.color
-                        );
-
-                        // Allow kings to capture forward or backward
-                        const isForwardCapture = rowOffset === (checkerData.color === 'white' ? -2 : 2);
-                        const isBackwardCapture = checkerData.king && rowOffset === (checkerData.color === 'white' ? 2 : -2);
-
-                        if ((isForwardCapture || isBackwardCapture) && capturedChecker) {
-                            // Remove captured piece from the scene and checkers array
-                            scene.remove(capturedChecker.piece);
-                            const index = checkers.indexOf(capturedChecker);
-                            if (index > -1) {
-                                checkers.splice(index, 1);
-                            }
-                            isMoveValid = true;
-                        }
-                    }
-                    if (!isMoveValid) {
-                        // return the piece to its original position if its not a valid move
-                        selectedChecker.position.copy(originalPosition);
-                    } else {
-                        // Check for king promotion
-                        const newRow = checkerData.color === 'white' ? 0 : 7;
-
-                        // Promote to King if a piece reaches the last row
-                        if (Math.round(selectedChecker.position.z / squareSizeZ + 3.5) === newRow && !checkerData.king) {
-                            checkerData.king = true;
-                            // Yellow king for white and Purple king for black
-                            checkerData.piece.material = new THREE.MeshStandardMaterial({ color: checkerData.color === 'white' ? 0xffff00 : 0x800080 });
-                        }
-
-                        // Check if the player can make another capture
-                        const canMakeAnotherCapture = isValidCaptureMove && additionalCapture(checkerData);
-
-                        if (canMakeAnotherCapture) {
-                            turnDisplay.textContent = `Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
-                        } else {
-                            switchTurn(); // Switch turn if no further captures are possible
-                        }
-                        checkForWinner();
-                    }
+                if (!isOverlapping && (checkerData.king || isForwardMove || isBackwardMove)) {
+                    isMoveValid = true;
                 }
-                isDragging = false;
-                selectedChecker = null;
+            } else if (isValidCaptureMove) {
+                const middleX = (originalPosition.x + selectedChecker.position.x) / 2;
+                const middleZ = (originalPosition.z + selectedChecker.position.z) / 2;
+
+                const capturedChecker = checkers.find(capturedPiece =>
+                    capturedPiece.piece.position.x === middleX &&
+                    capturedPiece.piece.position.z === middleZ &&
+                    capturedPiece.color !== checkerData.color
+                );
+
+                const isForwardCapture = rowOffset === (checkerData.color === 'white' ? -2 : 2);
+                const isBackwardCapture = checkerData.king && rowOffset === (checkerData.color === 'white' ? 2 : -2);
+
+                if ((isForwardCapture || isBackwardCapture) && capturedChecker) {
+                    animateCapturedPiece(capturedChecker); // Move captured piece to the side
+                    isMoveValid = true;
+                }
+            }
+
+            if (!isMoveValid) {
+                selectedChecker.position.copy(originalPosition);
+            } else {
+                const newRow = checkerData.color === 'white' ? 0 : 7;
+
+                if (Math.round(selectedChecker.position.z / squareSizeZ + 3.5) === newRow && !checkerData.king) {
+                    checkerData.king = true;
+                    checkerData.piece.material = new THREE.MeshStandardMaterial({
+                        color: checkerData.color === 'white' ? 0xffff00 : 0x800080,
+                    });
+                }
+
+                if (isValidCaptureMove && additionalCapture(checkerData)) {
+                    turnDisplay.textContent = `Turn: ${currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1)}`;
+                } else {
+                    switchTurn();
+                }
+                checkForWinner();
             }
         }
+        isDragging = false;
+        selectedChecker = null;
+    }
+}
+
+function animateCapturedPiece(capturedChecker) {
+    const boardTopY = tableHeight + tabletopHeight / 2 + boardThickness / 2; // Top surface of the board
+    const riseHeight = boardTopY + 5; // Lower height above the board
+    const cornerOffset = 5; // Distance from the board corner
+    const targetX = capturedChecker.color === 'white' 
+        ? -(boardLength / 2) + cornerOffset // Bottom-left corner for white
+        : (boardLength / 2) - cornerOffset; // Bottom-right corner for black
+    const targetZ = -(boardWidth / 2) + cornerOffset; // Bottom edge for both sides
+    const start = capturedChecker.piece.position.clone();
+    const rise = new THREE.Vector3(start.x, riseHeight, start.z); // Rising point
+    const move = new THREE.Vector3(targetX, riseHeight, targetZ); // Corner above the board
+    const end = new THREE.Vector3(targetX, boardTopY, targetZ); // Final resting point
+    const duration = 0.3; // Faster animation duration (in seconds)
+    let elapsedTime = 0;
+
+    function animatePiece() {
+        elapsedTime += clock.getDelta();
+        const t = Math.min(elapsedTime / duration, 1); // Clamp t to 0-1
+
+        if (t < 0.33) {
+            // Phase 1: Rise above the board
+            const phaseT = t / 0.33; // Normalize to 0-1 for this phase
+            capturedChecker.piece.position.lerpVectors(start, rise, phaseT);
+        } else if (t < 0.66) {
+            // Phase 2: Move to the corner above the board
+            const phaseT = (t - 0.33) / 0.33; // Normalize to 0-1 for this phase
+            capturedChecker.piece.position.lerpVectors(rise, move, phaseT);
+        } else {
+            // Phase 3: Lower down to the corner of the board
+            const phaseT = (t - 0.66) / 0.34; // Normalize to 0-1 for this phase
+            capturedChecker.piece.position.lerpVectors(move, end, phaseT);
+        }
+
+        if (t < 1) {
+            requestAnimationFrame(animatePiece);
+        } else {
+            // Add the piece to the captured list and remove it from checkers
+            capturedPieces[capturedChecker.color].push(capturedChecker.piece);
+            checkers.splice(checkers.indexOf(capturedChecker), 1);
+        }
+    }
+
+    animatePiece();
+}
+
+
+
 
         window.addEventListener('mousedown', onMouseDown, false);
         window.addEventListener('mousemove', onMouseMove, false);
