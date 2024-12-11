@@ -100,7 +100,7 @@
         pointLight.position.set(0, 50, 0);
         scene.add(pointLight);
 
-        const shadowLight = THREE.DirectionalLight(0xffffff, 1);
+        const shadowLight = new THREE.DirectionalLight(0xffffff, 1);
         shadowLight.position.set(10, 10, 10);
         shadowLight.castShadow = true;
         scene.add(shadowLight);
@@ -279,7 +279,9 @@
         const boardMaterial = new THREE.MeshStandardMaterial({map: boardTexture});
         const board = new THREE.Mesh(boardGeometry, boardMaterial);
         board.rotation.x = -Math.PI / 2;
-        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.05, 0); 
+        board.position.set(0, tableHeight - tabletopHeight / 2 + boardThickness / 2 + 0.05, 0);
+        board.castShadow = true;
+        board.receiveShadow = true; 
         scene.add(board);
 
         
