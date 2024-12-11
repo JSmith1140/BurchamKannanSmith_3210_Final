@@ -642,9 +642,9 @@ function onMouseUp(event) {
 }
 
 function animateCapturedPiece(capturedChecker) {
-    const boardTopY = tableHeight + tabletopHeight / 2 + boardThickness / 2; // Top surface of the board
+    const boardTopY = 16; // Top surface of the board
     const riseHeight = boardTopY + 5; // Lower height above the board
-    const cornerOffset = 5; // Distance from the board corner
+    const cornerOffset = -2; // Distance from the board corner
     const targetX = capturedChecker.color === 'white' 
         ? -(boardLength / 2) + cornerOffset // Bottom-left corner for white
         : (boardLength / 2) - cornerOffset; // Bottom-right corner for black
