@@ -14,3 +14,5 @@ Floor_Tile.jpg: https://ambientcg.com/view?id=Tiles094
 Table_Wood.jpg: https://www.lotpixel.com/texture/free-yellow-oak-wood-texture-1090
 
 Walls.jpg: https://jooinn.com/dirty-texture-2.html 
+
+Chair_Wood.jpg: https://ambientcg.com/view?id=Wood035
