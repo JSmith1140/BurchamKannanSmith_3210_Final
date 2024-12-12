@@ -6,6 +6,8 @@ This is a game of Checkers implemented in javascript with three.js, using models
 
 User Manual: https://docs.google.com/document/d/1skhJtmxFOgFgs7iiCiBruXTbf4GrOjAeZq9FCAvzdPU/edit?pli=1&tab=t.0
 
+Technical Challenges Slides: https://docs.google.com/presentation/d/1MXjeF-CqrI2jbxGGtk7Qm3BiraEROZ1rOfGiOfFKVwE/edit#slide=id.g31e1930042f_0_5
+
 # Textures 
 Checkers_Board.jpg: https://pixabay.com/photos/tiles-old-vintage-grunge-checks-2818710/
 
