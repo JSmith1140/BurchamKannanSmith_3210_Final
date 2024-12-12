@@ -2,7 +2,7 @@
 Computer Graphics Final Project
 
 Description:
-This is a game of Checkers implemented in javascript with three.js, using models, textures, lighting, user movement, and camera movement.
+This is a game of Checkers implemented in javascript with three.js, using models, textures, lighting, user movement, and camera movement. We decided to have the scene look like a run down room with dirty walls and floors as well as have the whole room dark besides one flickering light over the board.
 
 User Manual: https://docs.google.com/document/d/1skhJtmxFOgFgs7iiCiBruXTbf4GrOjAeZq9FCAvzdPU/edit?pli=1&tab=t.0
 
