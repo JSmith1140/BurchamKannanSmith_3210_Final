@@ -68,6 +68,7 @@
             <p><b>Mouse Drag and Drop</b> Select a piece to move and drop it on a square</p>
             <p><b>A:</b> Toggle on or off the ambient light</p>
             <p><b>P:</b> Toggle on or off the point light</p>
+            <p><b>M:</b> Toggle on or off the shadows</p>
             <p><b>H:</b> Show this menu</p>
             <p><b>Rules:</b> Game begins with White moving first. Pieces are always moved diagonally. Regular pieces can only move forward while Kings can move forward and backwards.
             Kings are created when a players piece reaches the last row of the board. You can capture opposing pieces by "jumping" the piece and you can do multiple "jumps" in one turn.
@@ -367,8 +368,19 @@
 
         // Checker piece creation
         const checkerGeometry = new THREE.CylinderGeometry(2, 2, 0.6, 32); // Simple disk geometry for checkers
-        const whiteMaterial = new THREE.MeshStandardMaterial({color: 0xffffff});
-        const blackMaterial = new THREE.MeshStandardMaterial({color: 0x000000});
+        function createShinyMaterial(color, isWhite = false) {
+            return new THREE.MeshStandardMaterial({
+                color: color,           
+                metalness: isWhite ? 0.3 : 0.8, 
+                roughness: 0.2,          
+                envMapIntensity: 0.8,    
+                emissive: isWhite ? 0x222222 : 0x000000,
+                emissiveIntensity: isWhite ? 0.5 : 0.0, 
+            });
+        }
+
+        const whiteMaterial = createShinyMaterial(0xffffff, true); // White shiny material
+        const blackMaterial = createShinyMaterial(0x000000);       // Black shiny material
 
         const checkers = [];
 
